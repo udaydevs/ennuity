@@ -7,7 +7,7 @@ import { useEffect } from "react";
 export default function Home() {
   const router = useRouter()
   useEffect(() => {
-    router.push('./SignUp')
+    router.push('./AuthPage')
   })
   return (
     <div>Loading</div>

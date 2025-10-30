@@ -22,13 +22,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={inter.className}>
-      <body>{children}</body>
+      <body>{children}
+
               <Toaster
           position="top-right"
           richColors
           theme="dark"
           closeButton
         />
+      </body>
     </html>
   )
 }

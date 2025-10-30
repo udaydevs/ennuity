@@ -12,7 +12,6 @@ def SignUp(request):
         if request.body:
             data = json.loads(request.body)
             user = data.get('email')
-            print(data)
         else:
             return JsonResponse({"msg" : "Please Use the proper json format to send the data"}, status = 400)
         difference = data_fields - data.keys()
@@ -39,23 +38,28 @@ def SignUp(request):
         return JsonResponse({"msg":"Invalid Method"}, status = 405) 
 
 def SignIn(request):
-    if request.method == 'POST':
-        if request.body:
+    if request.method != 'POST':
+        return JsonResponse({"msg": "Invalid Method"}, status=405)
+    if request.user.is_authenticated:
+        return JsonResponse({"msg": "Already Logged In"}, status=409)
+    if request.body:
+        try:
             data = json.loads(request.body)
-        else:
-            return JsonResponse({"msg" : "Please Use the proper json format to send the data"}, status = 400)
-        if ('email' not in (data.keys()) or 'password' not in (data.keys())):
-            return JsonResponse({"msg" : "Please give me all the required fields"}, status = 400)
-        if request.user.is_authenticated:
-                return JsonResponse({"msg":"Already Logged In "}, status = 409) 
-        user = authenticate(request, email = data.get('email') , password = data.get('password'))
-        if user is not None: 
-            login(request,user)
-            return JsonResponse({"msg":"Logged In Successfully"}, status = 200)
-        else:
-            return JsonResponse({"msg":"Wrong Credentials"}, status = 401)
-    else:return JsonResponse({"msg":"Invalid Method"},status = 405) 
-
+        except json.JSONDecodeError:
+            return JsonResponse({"msg": "Invalid JSON format"}, status=400)
+    else:
+        return JsonResponse({"msg": "Please send data in proper JSON format"}, status=400)
+    
+    if not all(key in data for key in ('email', 'password')):
+        return JsonResponse({"msg": "Please give me all the required fields (email, password)"}, status=400)
+    user = authenticate(request, email=data.get('email'), password=data.get('password'))
+    if user is not None:
+        login(request, user)  
+        return JsonResponse({"msg": "Logged In Successfully"}, status=200)
+    else:
+        return JsonResponse({"msg": "Wrong Credentials"}, status=401)
+    
+    
 def SignOut(request):
     if request.method == 'DELETE': 
         if request.user.is_authenticated:
