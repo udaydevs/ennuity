@@ -31,8 +31,8 @@ export default function SignUpForm({ setActiveForm }: SignUpFormProps) {
     if (formData.password !== formData.confirmpassword) {
       toast.error("Passwords do not match!");
       return;
-    }
-
+    }   
+     
     const payload = {
       FirstName: formData.firstName,
       LastName: formData.lastName,

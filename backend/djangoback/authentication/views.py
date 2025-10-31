@@ -1,69 +1,56 @@
 from django.http import JsonResponse
-from django.contrib.auth.models import User
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth import authenticate, login, logout
 from .functions import check_regex
 from .constants import mail, pass_check  
 import json
-from .models import CustomUser
-data_fields = ['FirstName', 'email', 'password', 'confirmpassword']
+from django.views.decorators.csrf import csrf_protect
 
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.middleware.csrf import get_token
+from django.views.decorators.http import require_GET
+from rest_framework.response import Response
+from rest_framework import status
+from .serializers import SignUpSerializer
+@ensure_csrf_cookie
+@api_view(["GET"])
+def get_csrf_token(request):
+    token = get_token(request)
+    return JsonResponse({"csrfToken": token})
+@api_view(['POST'])
 def SignUp(request):
-    if request.method == 'POST':
-        if request.body:
-            data = json.loads(request.body)
-            user = data.get('email')
-        else:
-            return JsonResponse({"msg" : "Please Use the proper json format to send the data"}, status = 400)
-        difference = data_fields - data.keys()
-        if difference:
-            return JsonResponse({"msg" : f" {list(difference)} are missing"}, status = 400)
-        if (check_regex(mail, data.get('email')) is None ):
-            return JsonResponse({"msg" : "Email should have  a proper format"}, status = 400)
-        if  ((check_regex(pass_check, data.get('password')) is None)):
-            return JsonResponse({"msg" : "Use valid pattern Password  (Make sure you are giving all the required field)"}, status = 400)
-        if (data.get('password') != data.get('confirmpassword')):
-            return JsonResponse({ "msg" : "Confirm password should be same as password or confirm password field is missing"}, status = 401)
-        if (CustomUser.objects.filter(email = data.get('email')).exists()):
-            return JsonResponse({"msg" : "User already exists"},status = 409)
-        else:
-            user = CustomUser(
-                email=data.get('email'),
-                first_name = data.get('FirstName'),
-            )
-            user.set_password(data.get('password')) 
-            user.last_name = data.get('LastName')         
-            user.save()
-            return JsonResponse({"msg" : "User Created Successfully"}, status = 201)
-    else:
-        return JsonResponse({"msg":"Invalid Method"}, status = 405) 
+    print(request.data)
+    serializer = SignUpSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response({"msg": "User Created Successfully"}, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+@csrf_protect
+@api_view(["POST"])
 def SignIn(request):
-    if request.method != 'POST':
-        return JsonResponse({"msg": "Invalid Method"}, status=405)
+    print("Authenticated:", request.user.is_authenticated)
+    print("User:", request.user)
     if request.user.is_authenticated:
-        return JsonResponse({"msg": "Already Logged In"}, status=409)
-    if request.body:
-        try:
-            data = json.loads(request.body)
-        except json.JSONDecodeError:
-            return JsonResponse({"msg": "Invalid JSON format"}, status=400)
-    else:
-        return JsonResponse({"msg": "Please send data in proper JSON format"}, status=400)
-    
-    if not all(key in data for key in ('email', 'password')):
-        return JsonResponse({"msg": "Please give me all the required fields (email, password)"}, status=400)
-    user = authenticate(request, email=data.get('email'), password=data.get('password'))
-    if user is not None:
-        login(request, user)  
+        return JsonResponse({"msg": "Already logged in"}, status=200)
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"msg": "Invalid JSON format"}, status=400)
+    if not all(k in data for k in ("email", "password")):
+        return JsonResponse({"msg": "Missing required fields"}, status=400)
+    user = authenticate(request, email=data["email"], password=data["password"])
+    if user:
+        login(request, user)
         return JsonResponse({"msg": "Logged In Successfully"}, status=200)
     else:
         return JsonResponse({"msg": "Wrong Credentials"}, status=401)
     
-    
-def SignOut(request):
-    if request.method == 'DELETE': 
-        if request.user.is_authenticated:
-            logout(request)
-            return JsonResponse({"msg":"Log Out"}, status = 200) 
-        return JsonResponse({"msg":"No Active User"}, status = 401)
-    else:return JsonResponse({"msg":"Invalid Method"}, status = 405)     
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def SignOut(request): 
+        logout(request)
+        return JsonResponse({"msg":"Log Out"}, status=status.HTTP_200_OK) 
+        

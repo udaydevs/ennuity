@@ -4,23 +4,18 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import axios from "axios";
 import { toast } from "sonner"; 
-import api from '@/api/ApiInstance';
+import api, { getCSRFToken }  from '@/api/ApiInstance';
 
 interface SignUpFormProps {
   setActiveForm: (formName: "signup" | "signin") => void;
 }
 
-// NOTE: Renamed the prop interface to be more accurate, though keeping the component name
-// for your reference. In a real app, you might call it SignInFormProps.
 export default function SignInForm({ setActiveForm }: SignUpFormProps) {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
-  
-  // ✅ 1. State for controlling the button
-  const [isLoading, setIsLoading] = useState(false);
-  
+    const [isLoading, setIsLoading] = useState(false);
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     setFormData((prev) => ({ ...prev, [id]: value }));
@@ -28,21 +23,20 @@ export default function SignInForm({ setActiveForm }: SignUpFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // ✅ 2. START loading immediately
-    setIsLoading(true);
-
+      setIsLoading(true);
     try {
+      const token = await getCSRFToken();
+    api.defaults.headers.common['X-CSRFToken'] = token;
       const response = await api.post("/account/SignIn/", formData);
       toast.success(response.data.msg || "Login successful!", { duration: 8000 });
     } catch (error: any) {
       if (error.response) {
-        toast.error(error.response.data.msg || "Invalid credentials.", { duration: 8000 });
+        console.log(error.response.data.msg)
+        toast.error(error.response.data.msg || "Invalid Credentials", { duration: 5000 });
       } else {
         toast.error("Unable to reach the server.", { duration: 8000 });
       }
     } finally {
-      // ✅ 3. END loading after API call (success or fail)
       setIsLoading(false); 
     }
   }; 
@@ -72,11 +66,9 @@ export default function SignInForm({ setActiveForm }: SignUpFormProps) {
       <button
         className={cn(
             "group/btn relative block h-12 w-full bg-[#6836f2] rounded-md font-bold text-white shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset transition-all",
-            // Style change for disabled state (optional but good UX)
             isLoading && "bg-gray-500 cursor-not-allowed" 
         )}
         type="submit"
-        // ✅ 4. Use the state to disable the button
         disabled={isLoading}
       >
         {/* Optional: Show loading text */}
