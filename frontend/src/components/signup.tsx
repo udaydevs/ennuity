@@ -25,38 +25,40 @@ export default function SignUpForm({ setActiveForm }: SignUpFormProps) {
     setFormData((prev) => ({ ...prev, [id]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    if (formData.password !== formData.confirmpassword) {
-      toast.error("Passwords do not match!");
-      return;
-    }   
-     
-    const payload = {
-      FirstName: formData.firstName,
-      LastName: formData.lastName,
-      email: formData.email,
-      password: formData.password,
-      confirmpassword: formData.confirmpassword,
-    };
+  if (formData.password !== formData.confirmpassword) {
+    toast.error("Passwords do not match!");
+    return;
+  }
 
-    try {
-      const response = await axios.post("http://127.0.0.1:8000/account/SignUp/", payload, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      toast.success(response.data.msg || "User created successfully!", { duration: 8000 });
-      setActiveForm("signin")
-    } catch (error: any) {
-      if (error.response) {
-        toast.error(error.response.data.msg || "Something went wrong.", { duration: 8000 });
-      } else {
-        toast.error("Unable to reach the server.", { duration: 8000 });
-      }
+const payload = {
+  FirstName: formData.firstName,  
+  LastName: formData.lastName,     
+  email: formData.email,           
+  password: formData.password,
+  confirmpassword: formData.confirmpassword,
+};
+  try {
+    const response = await axios.post("http://127.0.0.1:8000/account/SignUp/", payload, {
+      headers: { "Content-Type": "application/json" },
+    });
+
+    toast.success(response.data.msg || "User created successfully!", { duration: 8000 });
+    setActiveForm("signin");
+  } catch (error: any) {
+    if (error.response) {
+      // Show serializer validation errors clearly
+      const errors = error.response.data;
+      const errorMsg = typeof errors === "object" ? JSON.stringify(errors) : errors.msg;
+      toast.error(errorMsg || "Something went wrong.", { duration: 8000 });
+    } else {
+      toast.error("Unable to reach the server.", { duration: 8000 });
     }
-  };
+  }
+};
+
 
   return (
     <form className="my-3" onSubmit={handleSubmit}>

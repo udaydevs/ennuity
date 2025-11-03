@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-, "src/app/SignUp/page.jsx"  ],
+, "src/app/SignUp/page.jsx", "src/components/navbar.jsx"  ],
   "exclude": ["node_modules"]
 }

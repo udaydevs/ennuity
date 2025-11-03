@@ -1,18 +1,21 @@
 'use client'
+import React from "react";
+
 import Navbar from "@/components/navbar";
 import Image from "next/image";
+import { SparklesCore } from "@/components/ui/sparkle";
 
 export default function Page() {
     return (
-        <div className="relative w-full h-screen bg-transparent overflow-hidden">
+        <div className="relative w-full  bg-transparent overflow-hidden">
             <Image
                 src="https://framerusercontent.com/images/mIs3Fk4rQo6RbnLoVR28wQRzfhg.png"
                 alt="Background"
                 fill
-                className="object-fill scale-115 absolute -mt-10  z-[-1] "
+                className="object-fill h-screen rotate-180 absolute   z-[-1] "
                 priority
             />
-            <div className="relative z-10 bg-transparent flex flex-col items-center justify-center h-full text-white text-center px-4">
+            <div className="relative z-10 bg-transparent flex flex-col items-center justify-center h-screen text-white text-center px-4">
                 <Navbar />
                 <section className="flex flex-col items-center justify-center text-center h-[94%] bg-transparent text-white relative overflow-hidden">
                     <div className="mb-4 text-sm text-gray-300 bg-gradient-to-r from-purple-500/30 to-fuchsia-500/30 rounded-full px-4 py-1 border border-purple-400/40 backdrop-blur-sm">
@@ -33,6 +36,18 @@ export default function Page() {
                         Get Started For Free
                     </button>
                 </section>
+            </div>
+            <Image
+                src="https://framerusercontent.com/images/mIs3Fk4rQo6RbnLoVR28wQRzfhg.png"
+                alt="Background"
+                fill
+                className="object-fill h-screen scale-115  -mb-10 absolute z-[-1] "
+                priority
+            />
+            <div className="relative z-10 h-screen bg-transparent flex flex-col items-center justify-center h-screen text-white text-center px-4">
+                
+
+   
             </div>
         </div>
     );

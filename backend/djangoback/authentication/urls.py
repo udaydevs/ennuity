@@ -1,10 +1,13 @@
 from django.urls import path
 from . import views
-from .views import get_csrf_token, SignIn
+from .views import EmailTokenObtainPairView
+from rest_framework_simplejwt.views import TokenRefreshView
+
 
 urlpatterns = [
-    path("csrf/", views.get_csrf_token, name="get_csrf_token"),
+    path('api/SignIn/', EmailTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
     path('SignUp/', views.SignUp),
-    path('SignIn/', views.SignIn),
     path('SignOut/', views.SignOut),
 ]

@@ -17,7 +17,7 @@ export default function Navbar() {
       <div className="flex items-center space-x-4">
         <Link href={'./AuthPage?mode=signin'}>
           <button className="text-[16px] text-white hover:text-cyan-300 transition">
-            Sign In
+            Log In
           </button>
         </Link>
         <Link href={'./AuthPage?mode=signup'}>
